@@ -15,14 +15,9 @@ jobs:
           submodules: recursive
 
       - name: Start database
-        run: docker-compose up -d
-
-      - name: Wait for Pagila to load
         run: |
-          until docker-compose exec -T pg psql -U postgres -d postgres -tAc "SELECT to_regclass('public.actor');" | grep -q actor; do
-            echo "Waiting for pagila tables to load..."
-            sleep 2
-          done
+          docker compose up -d
+          sleep 15
 
       - name: Run tests
-        run: docker-compose exec -T pg ./run_tests.sh
+        run: docker compose exec -T pg ./run_tests.sh
