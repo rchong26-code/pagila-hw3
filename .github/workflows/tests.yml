@@ -14,7 +14,10 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Run tests
+      - name: Start database
         run: |
-          docker compose up -d
-          docker compose exec -T pg ./run_tests.sh
+          docker-compose up -d
+          sleep 10
+
+      - name: Run tests
+        run: docker-compose exec -T pg ./run_tests.sh
