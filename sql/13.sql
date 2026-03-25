@@ -9,3 +9,38 @@
  * For correct output, you will have to rank the films for each actor.
  * My solution uses the `rank` window function.
  */
+
+
+
+
+
+SELECT
+    actor_id,
+    first_name,
+    last_name,
+    film_id,
+    title,
+    rnk AS rank,
+    revenue
+FROM (
+    SELECT
+        a.actor_id,
+        a.first_name,
+        a.last_name,
+        f.film_id,
+        f.title,
+        COALESCE(SUM(p.amount), 0) AS revenue,
+        RANK() OVER (
+            PARTITION BY a.actor_id
+            ORDER BY COALESCE(SUM(p.amount), 0) DESC, f.title ASC
+        ) AS rnk
+    FROM actor a
+    JOIN film_actor fa ON a.actor_id = fa.actor_id
+    JOIN film f ON fa.film_id = f.film_id
+    LEFT JOIN inventory i ON f.film_id = i.film_id
+    LEFT JOIN rental r ON i.inventory_id = r.inventory_id
+    LEFT JOIN payment p ON r.rental_id = p.rental_id
+    GROUP BY a.actor_id, a.first_name, a.last_name, f.film_id, f.title
+) t
+WHERE rnk <= 3
+ORDER BY actor_id, rank;
